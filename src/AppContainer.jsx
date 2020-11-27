@@ -13,7 +13,6 @@ import ClearConfirmModal from './components/Modals/ClearConfirmModal';
 import ClearingModal from './components/Modals/ClearingModal';
 import LoadingContainer from './components/Float/LoadingContainer';
 import RawQuery from './components/RawQuery';
-import MenuContainer from './components/Menu/MenuContainer';
 import ExportContainer from './components/Float/ExportContainer';
 import Settings from './components/Float/Settings';
 import ZoomContainer from './components/Zoom/ZoomContainer';
@@ -25,6 +24,49 @@ import NodeEditor from './components/Float/NodeEditor';
 import WarmupModal from './components/Modals/WarmupModal.jsx';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import { AppContext } from './AppContext';
+import GraphErrorModal from './components/Modals/GraphErrorModal';
+import MenuContainer from './components/Menu/MenuContainer';
+
+const fullEdgeList = [
+    'CanRDP',
+    'CanPSRemote',
+    'ExecuteDCOM',
+    'AllowedToDelegate',
+    'AddAllowedToAct',
+    'AllowedToAct',
+    'SQLAdmin',
+    'HasSIDHistory',
+    'AZAddMembers',
+    'AZContains',
+    'AZContributor',
+    'AZGetCertificates',
+    'AZGetKeys',
+    'AZGetSecrets',
+    'AZGlobalAdmin',
+    'AZOwns',
+    'AZPrivilegedRoleAdmin',
+    'AZResetPassword',
+    'AZUserAccessAdministrator',
+    'AZAppAdmin',
+    'AZCloudAppAdmin',
+    'AZRunsAs',
+    'AZKeyVaultContributor',
+    'Contains',
+    'GpLink',
+    'AllExtendedRights',
+    'AddMember',
+    'ForceChangePassword',
+    'GenericAll',
+    'GenericWrite',
+    'Owns',
+    'WriteDacl',
+    'WriteOwner',
+    'ReadLAPSPassword',
+    'ReadGMSAPassword',
+    'MemberOf',
+    'HasSession',
+    'AdminTo',
+];
 
 export default class AppContainer extends Component {
     constructor(props) {
@@ -65,7 +107,7 @@ export default class AppContainer extends Component {
             emitter.emit('changeGraphicsMode', !lowDetail);
         };
 
-        this.setNodeLabels = val => {
+        this.setNodeLabels = (val) => {
             this.setState({
                 nodeLabels: val,
             });
@@ -73,10 +115,20 @@ export default class AppContainer extends Component {
             emitter.emit('changeNodeLabels');
         };
 
-        this.setEdgeLabels = val => {
+        this.setEdgeLabels = (val) => {
             this.setState({ edgeLabels: val });
             appStore.performance.edgeLabels = val;
             emitter.emit('changeEdgeLabels');
+        };
+
+        this.setEdgeIncluded = (name, included) => {
+            let { edgeIncluded } = this.state;
+            edgeIncluded[name] = included;
+            this.setState({
+                edgeIncluded: edgeIncluded,
+            });
+            appStore.edgeincluded = edgeIncluded;
+            conf.set('edgeincluded', edgeIncluded);
         };
 
         this.state = {
@@ -90,13 +142,15 @@ export default class AppContainer extends Component {
             setNodeLabels: this.setNodeLabels,
             edgeLabels: appStore.performance.edgeLabels,
             setEdgeLabels: this.setEdgeLabels,
+            edgeIncluded: appStore.edgeincluded,
+            setEdgeIncluded: this.setEdgeIncluded,
         };
     }
 
     componentDidMount() {
         document.addEventListener(
             'dragover',
-            function(event) {
+            function (event) {
                 event.preventDefault();
                 return false;
             },
@@ -105,7 +159,7 @@ export default class AppContainer extends Component {
 
         document.addEventListener(
             'drop',
-            function(event) {
+            function (event) {
                 event.preventDefault();
                 if (
                     jQuery('#tabcontainer').has(jQuery(event.target)).length ===
@@ -120,6 +174,14 @@ export default class AppContainer extends Component {
             },
             false
         );
+
+        let { edgeIncluded } = this.state;
+
+        for (let edge of fullEdgeList) {
+            if (!(edge in edgeIncluded)) {
+                this.setEdgeIncluded(edge, true);
+            }
+        }
     }
 
     render() {
@@ -153,6 +215,7 @@ export default class AppContainer extends Component {
                             <About />
                             <NodeEditor />
                             <HelpModal />
+                            <GraphErrorModal />
                         </div>
                     </AppContext.Provider>
                 </CSSTransition>
