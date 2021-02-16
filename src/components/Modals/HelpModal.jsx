@@ -43,6 +43,8 @@ import AZGlobalAdmin from './HelpTexts/AZGlobalAdmin/AZGlobalAdmin';
 import AZAppAdmin from './HelpTexts/AZAppAdmin/AZAppAdmin';
 import AZCloudAppAdmin from './HelpTexts/AZCloudAppAdmin/AZCloudAppAdmin';
 import AZRunsAs from './HelpTexts/AZRunsAs/AZRunsAs';
+import AZVMContributor from './HelpTexts/AZVMContributor/AZVMContributor';
+import Default from './HelpTexts/Default/Default';
 
 const HelpModal = () => {
     const [sourceName, setSourceName] = useState('');
@@ -114,13 +116,13 @@ const HelpModal = () => {
         AZResetPassword: AZResetPassword,
         AZUserAccessAdministrator: AZUserAccessAdministrator,
         AZGlobalAdmin: AZGlobalAdmin,
-        AZUserAccessAdministrator: AZUserAccessAdministrator,
         AZAppAdmin: AZAppAdmin,
         AZCloudAppAdmin: AZCloudAppAdmin,
         AZRunsAs: AZRunsAs,
+        AZVMContributor: AZVMContributor,
     };
 
-    const Component = components[edge];
+    const Component = edge in components ? components[edge] : Default;
 
     return (
         <BaseModal
